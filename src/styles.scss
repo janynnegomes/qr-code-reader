@@ -29,12 +29,20 @@ body {
   }
 
   #canvas {
-    max-width: 90%;
+    max-width: 60%;
     position: relative;
-    border: solid 5px red;
+    border: solid 5px #d60606;
     //top: 2rem;
     margin: 0 auto;
     display: block;
+
+    &.success{
+        border-color: #14fd4d;
+    }
+
+    &.error{
+        border-color: #d60606;
+    }
   }
   button{
     border: 0;

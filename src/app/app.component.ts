@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 // ES6 import
 import jsQR from "jsqr";
+import { error } from 'protractor';
 
 
 @Component({
@@ -12,17 +13,6 @@ export class AppComponent implements OnInit, AfterViewInit{
   constructor( public cdRef:ChangeDetectorRef) {}
   ngAfterViewInit(): void {
     this.canvas = this.canvasElement.nativeElement.getContext("2d");
-
-    //  // Use facingMode: environment to attemt to get the front camera on phones
-    // navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
-    //   if(this.video.nativeElement){
-    //     this.video.nativeElement.srcObject= stream;
-    //     this.video.nativeElement.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
-    //     this.video.nativeElement.play();
-    //     requestAnimationFrame(this.tick);
-    //   }
-    // });
-
     this.initCamera();
   }
 
@@ -30,16 +20,16 @@ export class AppComponent implements OnInit, AfterViewInit{
 
   }
 
-  title = 'qr-code-reader';
+  public  stream;
 
-  //video = document.createElement("video");
   @ViewChild('canvas',{static:false}) public canvasElement: ElementRef<HTMLCanvasElement>;
   @ViewChild('loadingMessage',{static:false}) public loadingMessage: ElementRef<HTMLDivElement>;
   @ViewChild('output',{static:false}) public output: ElementRef<HTMLDivElement>;
   @ViewChild('video',{static:false}) public video: ElementRef<HTMLVideoElement>;
 
   public canvas: CanvasRenderingContext2D;
-
+  currentWidth:number;
+  currentHeight:number;
   outputData:string = '';
 
 
@@ -56,9 +46,8 @@ export class AppComponent implements OnInit, AfterViewInit{
    tick() {
 
     if(window['stopVideo'] === 'false'){
-      if(this.loadingMessage) {
-        this.loadingMessage.nativeElement.innerText = "⌛ Loading video...";
-      }
+     this.loadingMessage.nativeElement.innerText = "⌛ Abrindo a câmera ...";
+      
   
       if ( this.video.nativeElement.readyState === this.video.nativeElement.HAVE_ENOUGH_DATA) {
         this.loadingMessage.nativeElement.hidden = true;
@@ -73,23 +62,23 @@ export class AppComponent implements OnInit, AfterViewInit{
           inversionAttempts: "dontInvert",
         });
         if (code) {
-          this.drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
-          this.drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
-          this.drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
-          this.drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+          this.drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#14fd4d");
+          this.drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#14fd4d");
+          this.drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#14fd4d");
+          this.drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#14fd4d");
           
           if(code.data && code.data.length > 0){
             this.outputData=code.data;
             console.log('data',code.data);
-            navigator.mediaDevices.getUserMedia({ video:  { facingMode: "environment" } }).then(stream => {
-              if(this.video){           
-                const tracks = stream.getTracks();
-                tracks[0].stop;
-                //this.video.nativeElement.pause();
-                window['stopVideo'] = 'true';
 
-                this.cdRef.detectChanges();
-              }});
+            this.video.nativeElement.pause();
+            
+            window['stopVideo'] = 'true';
+
+            this.closeCamera()
+            this.cdRef.detectChanges();
+
+            
           }
           
         } else {
@@ -102,20 +91,52 @@ export class AppComponent implements OnInit, AfterViewInit{
   }
 
   initCamera(){
+    const fullHDConstraints = { width: {exact: 1920}, height: {exact: 1080}};    
+    const vgaConstraints = { width: {exact: 640}, height: {exact: 480} };    
+    const hdConstraints = {width: {exact: 1280}, height: {exact: 720}};
+
     if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video:  { facingMode: "environment" } }).then(stream => {
-          if(this.video){
-            window['stopVideo'] = 'false';
-            this.video.nativeElement.srcObject = stream;
-            this.video.nativeElement.setAttribute("playsinline", 'true'); // required to tell iOS safari we don't want fullscreen
-            this.video.nativeElement.play();
-            window.requestAnimationFrame(this.tick.bind(this));
-          }
+      this.getStream(fullHDConstraints).then(stream => {   
+        this.currentHeight = fullHDConstraints.height.exact;     
+        this.currentWidth= fullHDConstraints.width.exact;  
+      }).catch(fullHDError=>{
+        this.getStream(hdConstraints).then(stream => {
+          this.currentHeight = hdConstraints.height.exact;     
+          this.currentWidth= hdConstraints.width.exact;  
+        })
+        .catch(hdError=>{
+          this.getStream(vgaConstraints).then(stream => {
+            this.currentHeight = vgaConstraints.height.exact;     
+            this.currentWidth= vgaConstraints.width.exact;  
+          })
+        })
       });
     }
   }
 
+  getStream(constraints){
+  return new Promise((resolve, reject)=>{
+    navigator.mediaDevices.getUserMedia({ video:  { facingMode: "environment", ...constraints } })
+      .then(stream => {     
+        window['stopVideo'] = 'false';  
+        this.video.nativeElement.srcObject = stream;
+        this.video.nativeElement.setAttribute("playsinline", 'true'); // required to tell iOS safari we don't want fullscreen
+        this.video.nativeElement.play();
+        window.requestAnimationFrame(this.tick.bind(this));
+        resolve(true);
+        }).catch(error=>reject(error));
+    });
+  }
+
+  closeCamera(){
+    navigator.mediaDevices.getUserMedia({ video:  { facingMode: "environment" } }).then(stream => {
+      const tracks = stream.getTracks();
+      tracks[0].stop;
+    });
+  }
+
   restart(){
+    this.outputData= '';
     this.initCamera();
   }
 }

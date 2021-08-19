@@ -17,8 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "docs",
-            "baseHref": "https://janynnegomes.github.io/qr-code-reader/",
+            "outputPath": "docs",            
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -48,6 +47,7 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
+              "baseHref": "https://janynnegomes.github.io/qr-code-reader/",
               "budgets": [
                 {
                   "type": "initial",
