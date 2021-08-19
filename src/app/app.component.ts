@@ -85,7 +85,10 @@ export class AppComponent implements OnInit, AfterViewInit{
           this.outputData = '';
         }
       }
-      window.requestAnimationFrame(this.tick.bind(this));
+      setTimeout(() => {
+        window.requestAnimationFrame(this.tick.bind(this));
+      }, 300);
+     
     }
     
   }
@@ -96,10 +99,7 @@ export class AppComponent implements OnInit, AfterViewInit{
     const hdConstraints = {width: {exact: 1280}, height: {exact: 720}};
 
     if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      this.getStream(fullHDConstraints).then(stream => {   
-        this.currentHeight = fullHDConstraints.height.exact;     
-        this.currentWidth= fullHDConstraints.width.exact;  
-      }).catch(fullHDError=>{
+     
         this.getStream(hdConstraints).then(stream => {
           this.currentHeight = hdConstraints.height.exact;     
           this.currentWidth= hdConstraints.width.exact;  
@@ -110,7 +110,6 @@ export class AppComponent implements OnInit, AfterViewInit{
             this.currentWidth= vgaConstraints.width.exact;  
           })
         })
-      });
     }
   }
 
