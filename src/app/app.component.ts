@@ -100,16 +100,20 @@ export class AppComponent implements OnInit, AfterViewInit{
 
     if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
      
-        this.getStream(hdConstraints).then(stream => {
-          this.currentHeight = hdConstraints.height.exact;     
-          this.currentWidth= hdConstraints.width.exact;  
-        })
-        .catch(hdError=>{
-          this.getStream(vgaConstraints).then(stream => {
-            this.currentHeight = vgaConstraints.height.exact;     
-            this.currentWidth= vgaConstraints.width.exact;  
-          })
-        })
+      this.getStream(vgaConstraints).then(stream => {
+        this.currentHeight = vgaConstraints.height.exact;     
+        this.currentWidth= vgaConstraints.width.exact;  
+      })
+        // this.getStream(hdConstraints).then(stream => {
+        //   this.currentHeight = hdConstraints.height.exact;     
+        //   this.currentWidth= hdConstraints.width.exact;  
+        // })
+        // .catch(hdError=>{
+        //   this.getStream(vgaConstraints).then(stream => {
+        //     this.currentHeight = vgaConstraints.height.exact;     
+        //     this.currentWidth= vgaConstraints.width.exact;  
+        //   })
+        // })
     }
   }
 
