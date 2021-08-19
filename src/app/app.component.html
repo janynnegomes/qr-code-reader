@@ -1,7 +1,8 @@
 <h2>Leia seu QR-Code <button  (click)="restart()" >Ler código</button></h2> 
 <div id="loadingMessage" #loadingMessage>🎥 Não consegui acessar seu vídeo (certifique que concedeu acesso á webcam)</div>
   <canvas id="canvas" [ngClass]="{'success':outputData, 'error':!outputData}" #canvas hidden></canvas>
-  <video #video id="video" width="currentWidth" height="currentHeight" autoplay hidden></video>
+  <p *ngIf="currentWidth" class="dimensions">Largura: {{currentWidth}} - Altura: {{currentHeight}}</p>
+  <video #video id="video" width="640" height="480" autoplay hidden></video>
   <div id="output" #output >
     <div id="outputMessage" #outputMessage *ngIf="!outputData">Nenhum QR code detectado</div>
     <ng-container *ngIf="outputData?.length > 0" ><span>Conteúdo lido:</span> <p id="outputData" >{{outputData}}</p></ng-container>
